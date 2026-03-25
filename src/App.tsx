@@ -18,7 +18,7 @@ import AntigravitySlider from './components/AntigravitySlider';
 
 export default function App() {
   const [config, setConfig] = useState<GameConfig>(DEFAULT_CONFIG);
-  const [activeTab, setActiveTab] = useState<'graphics' | 'aiming' | 'weapons' | 'tactics' | 'network' | 'performance' | 'system' | 'preview' | 'antigravity'>('graphics');
+  const [activeTab, setActiveTab] = useState<'graphics' | 'aiming' | 'weapons' | 'tactics' | 'network' | 'performance' | 'advanced' | 'system' | 'preview' | 'antigravity'>('graphics');
   const [selectedFormats, setSelectedFormats] = useState<('json' | 'ini' | 'xml' | 'lua' | 'sav' | 'inj' | 'yaml')[]>(['ini', 'sav']);
   const [isApplying, setIsApplying] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -684,6 +684,7 @@ export default function App() {
               { id: 'tactics', icon: Zap, label: 'Tactics' },
               { id: 'network', icon: Wifi, label: 'Network' },
               { id: 'performance', icon: Activity, label: 'Performance' },
+              { id: 'advanced', icon: Gauge, label: 'Advanced' },
               { id: 'antigravity', icon: Database, label: 'Antigravity' },
               { id: 'system', icon: Smartphone, label: 'System' },
               { id: 'preview', icon: FileCode, label: 'Configs' }
@@ -1386,6 +1387,161 @@ export default function App() {
                       />
                     </div>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'advanced' && (
+              <motion.div
+                key="advanced"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h2 className="text-xl font-black text-white tracking-tight">Aiming <span className="text-cyan-400">Precision</span></h2>
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Real-time Sync • Magnetic Pull</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <Gauge size={20} />
+                  </div>
+                </div>
+
+                <div className="glass-dark rounded-3xl p-5 space-y-5 border border-cyan-500/10">
+                  <h3 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Precision Controls</h3>
+                  {[
+                    { label: 'Magnetic Pull', desc: 'Strength of target attraction', id: 'magneticPull', max: 999 },
+                    { label: 'Aim Pull Strength', desc: 'Aggression of crosshair movement', id: 'aimPullStrength', max: 999 },
+                    { label: 'Lock Strength', desc: 'Tightness of target lock', id: 'lockStrength', max: 999 },
+                    { label: 'Stickiness', desc: 'Resistance to target switching', id: 'stickiness', max: 999 },
+                    { label: 'Bullet Velocity', desc: 'Travel speed of projectiles', id: 'bulletVelocity', max: 999 },
+                    { label: 'Headshot Radius', desc: 'Area for critical hit detection', id: 'headshotRadius', max: 999 },
+                  ].map(item => (
+                    <div key={item.id} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xs font-black text-white">{item.label}</span>
+                          <p className="text-[8px] text-white/30 font-bold">{item.desc}</p>
+                        </div>
+                        <span className="text-cyan-400 font-mono text-sm font-black">{(config.aiming as any)[item.id]}</span>
+                      </div>
+                      <input 
+                        type="range" min="0" max={item.max} step="1"
+                        value={(config.aiming as any)[item.id]}
+                        onChange={(e) => setConfig(prev => ({ ...prev, aiming: { ...prev.aiming, [item.id]: parseInt(e.target.value) } }))}
+                        className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="glass-dark rounded-3xl p-5 space-y-4 border border-cyan-500/10">
+                  <h3 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Aim Smoothness</h3>
+                  <p className="text-[8px] text-white/30 font-bold uppercase">Higher values = more human-like, but slower</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Calibrate</span>
+                    <span className="text-cyan-400 font-mono text-sm font-black">{config.aiming.aimSmoothness}</span>
+                  </div>
+                  <input 
+                    type="range" min="1" max="100" step="1"
+                    value={config.aiming.aimSmoothness}
+                    onChange={(e) => setConfig(prev => ({ ...prev, aiming: { ...prev.aiming, aimSmoothness: parseInt(e.target.value) } }))}
+                    className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                  />
+                </div>
+
+                <div className="glass-dark rounded-3xl p-5 space-y-4 border border-cyan-500/10">
+                  <h3 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Combat Automation</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: 'Trigger Bot', id: 'triggerBot' },
+                      { label: 'Auto Fire', id: 'autoFire' },
+                      { label: 'No Flinch', id: 'noFlinch' },
+                      { label: 'Auto Aim', id: 'autoAim' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setConfig(prev => ({ ...prev, aiming: { ...prev.aiming, [item.id]: !(prev.aiming as any)[item.id] } }))}
+                        className={`p-4 rounded-2xl text-xs font-black flex items-center justify-between transition-all ${(config.aiming as any)[item.id] ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20' : 'glass border border-white/5 text-white/40'}`}
+                      >
+                        {item.label}
+                        {(config.aiming as any)[item.id] ? <Check className="w-3 h-3" /> : <Square className="w-3 h-3" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass-dark rounded-3xl p-5 space-y-5 border border-purple-500/10">
+                  <h3 className="text-[10px] font-black text-purple-400 uppercase tracking-widest">GFX Engine Pro</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-white/60">HDR Mode</span>
+                    <select 
+                      value={config.graphics.hdrMode}
+                      onChange={(e) => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, hdrMode: e.target.value as any } }))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-[10px] font-bold outline-none"
+                    >
+                      {['None', 'HDR10', 'HDR10+', 'Dolby Vision'].map(m => (
+                        <option key={m} value={m} className="bg-[#050505]">{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-white/60">Color Grade</span>
+                    <select 
+                      value={config.graphics.colorGrade}
+                      onChange={(e) => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, colorGrade: e.target.value as any } }))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-[10px] font-bold outline-none"
+                    >
+                      {['Classic', 'Vivid', 'Cinema', 'Cool', 'Warm'].map(m => (
+                        <option key={m} value={m} className="bg-[#050505]">{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-white/60">LOD Distance</span>
+                      <span className="text-purple-400 font-mono text-[10px]">{config.graphics.lodDistance}x</span>
+                    </div>
+                    <input 
+                      type="range" min="1" max="999" step="1"
+                      value={config.graphics.lodDistance}
+                      onChange={(e) => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, lodDistance: parseInt(e.target.value) } }))}
+                      className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-white/60">Anisotropic Filtering</span>
+                      <span className="text-purple-400 font-mono text-[10px]">{config.graphics.anisotropicFiltering}x</span>
+                    </div>
+                    <input 
+                      type="range" min="1" max="16" step="1"
+                      value={config.graphics.anisotropicFiltering}
+                      onChange={(e) => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, anisotropicFiltering: parseInt(e.target.value) } }))}
+                      className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-white/60">MSAA Anti-Aliasing</span>
+                      <span className="text-purple-400 font-mono text-[10px]">{config.graphics.msaa}x</span>
+                    </div>
+                    <input 
+                      type="range" min="0" max="8" step="2"
+                      value={config.graphics.msaa}
+                      onChange={(e) => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, msaa: parseInt(e.target.value) } }))}
+                      className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setConfig(prev => ({ ...prev, graphics: { ...prev.graphics, dynamicResolution: !prev.graphics.dynamicResolution } }))}
+                    className={`w-full p-3 rounded-xl text-[10px] font-black flex items-center justify-between transition-all ${config.graphics.dynamicResolution ? 'bg-purple-500 text-white' : 'glass border border-white/5 text-white/40'}`}
+                  >
+                    Dynamic Resolution Scaling
+                    {config.graphics.dynamicResolution ? <Check className="w-3 h-3" /> : <Square className="w-3 h-3" />}
+                  </button>
                 </div>
               </motion.div>
             )}

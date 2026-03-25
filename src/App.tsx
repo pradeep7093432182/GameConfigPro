@@ -18,7 +18,7 @@ import AntigravitySlider from './components/AntigravitySlider';
 
 export default function App() {
   const [config, setConfig] = useState<GameConfig>(DEFAULT_CONFIG);
-  const [activeTab, setActiveTab] = useState<'graphics' | 'aiming' | 'weapons' | 'tactics' | 'network' | 'performance' | 'advanced' | 'system' | 'preview' | 'antigravity'>('graphics');
+  const [activeTab, setActiveTab] = useState<'graphics' | 'aiming' | 'tactics' | 'network' | 'performance' | 'advanced' | 'system' | 'preview' | 'antigravity'>('graphics');
   const [selectedFormats, setSelectedFormats] = useState<('json' | 'ini' | 'xml' | 'lua' | 'sav' | 'inj' | 'yaml')[]>(['ini', 'sav']);
   const [isApplying, setIsApplying] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -55,6 +55,7 @@ export default function App() {
       let name = "Unknown Device";
       let chipset = "Unknown";
       let gpu = "Unknown";
+      let os = "Android 14 (Stable)";
 
       // Check if desktop first
       const ua = navigator.userAgent;
@@ -64,20 +65,23 @@ export default function App() {
         // Desktop detection
         if (/Windows/i.test(ua)) {
           name = "Windows PC";
+          os = "Windows 11 / 10 Enterprise";
           chipset = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency}-Core CPU` : "Multi-Core CPU";
-          gpu = "DirectX GPU";
+          gpu = "DirectX 12 / Vulkan GPU";
         } else if (/Mac/i.test(ua)) {
           name = "Apple Mac";
-          chipset = /Apple/i.test(ua) ? "Apple Silicon" : "Intel Core";
-          gpu = /Apple/i.test(ua) ? "Apple Integrated" : "AMD Radeon";
+          os = "macOS Sequoia / Sonoma";
+          chipset = /Apple/i.test(ua) ? "Apple Silicon M-Series" : "Intel Core i9/i7";
+          gpu = /Apple/i.test(ua) ? "Apple Silicon GPU" : "AMD Radeon Pro";
         } else if (/Linux/i.test(ua)) {
           name = "Linux Desktop";
-          chipset = `${navigator.hardwareConcurrency || 8}-Core CPU`;
-          gpu = "Mesa/Vulkan";
+          os = "Ubuntu / Arch / Debian";
+          chipset = `${navigator.hardwareConcurrency || 8}-Core Engine`;
+          gpu = "Mesa Open-Source Driver";
         } else {
-          name = "Desktop PC";
+          name = "Master PC";
           chipset = `${navigator.hardwareConcurrency || 4}-Core CPU`;
-          gpu = "GPU";
+          gpu = "Integrated GPU";
         }
 
         // Add RAM estimate
@@ -92,25 +96,23 @@ export default function App() {
             if (highEntropyData.model && highEntropyData.model.trim()) {
               name = highEntropyData.model;
             }
-            if (highEntropyData.platform) {
-              const platform = highEntropyData.platform;
-              if (platform === 'Android') {
-                // Map known models
-                if (name.includes('SM-S92')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-                else if (name.includes('SM-S91')) { chipset = "Snapdragon 8 Gen 2"; gpu = "Adreno 740"; }
-                else if (name.includes('SM-A')) { chipset = "Exynos/Dimensity"; gpu = "Mali-G68"; }
-                else if (name.includes('Pixel 8')) { chipset = "Google Tensor G3"; gpu = "Mali-G715"; }
-                else if (name.includes('Pixel 7')) { chipset = "Google Tensor G2"; gpu = "Mali-G710"; }
-                else if (name.includes('ROG')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-                else if (name.includes('RedMagic')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-                else if (name.includes('POCO F5')) { chipset = "Snapdragon 7+ Gen 2"; gpu = "Adreno 725"; }
-                else if (name.includes('POCO F6')) { chipset = "Snapdragon 8s Gen 3"; gpu = "Adreno 735"; }
-                else if (name.includes('M2101K6P')) { name = "Redmi Note 10 Pro"; chipset = "Snapdragon 732G"; gpu = "Adreno 618"; }
-                else if (name.includes('Redmi') || name.includes('POCO') || name.includes('Mi ')) { chipset = "Snapdragon/Dimensity"; gpu = "Adreno/Mali"; }
-                else if (name.includes('SAMSUNG') || name.includes('SM-')) { chipset = "Snapdragon/Exynos"; gpu = "Adreno/Mali"; }
-                else if (name.includes('OPPO') || name.includes('Realme') || name.includes('OnePlus')) { chipset = "Snapdragon/Dimensity"; gpu = "Adreno/Mali"; }
-                else { chipset = "ARM Processor"; gpu = "Mobile GPU"; }
-              }
+            if (highEntropyData.platformVersion) os = `Android ${highEntropyData.platformVersion}`;
+            
+            if (highEntropyData.platform === 'Android') {
+              // Map known models to premium stats
+              if (name.includes('SM-S92')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
+              else if (name.includes('SM-S91')) { chipset = "Snapdragon 8 Gen 2"; gpu = "Adreno 740"; }
+              else if (name.includes('SM-A5')) { chipset = "Exynos 1480"; gpu = "Xclipse 530"; }
+              else if (name.includes('Pixel 8')) { chipset = "Google Tensor G3"; gpu = "Mali-G715"; }
+              else if (name.includes('Pixel 7')) { chipset = "Google Tensor G2"; gpu = "Mali-G710"; }
+              else if (name.includes('ROG 8')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Overclocked Adreno 750"; }
+              else if (name.includes('RedMagic 9')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Active Cooled Adreno 750"; }
+              else if (name.includes('POCO F5')) { chipset = "Snapdragon 7+ Gen 2"; gpu = "Adreno 725"; }
+              else if (name.includes('POCO F6')) { chipset = "Snapdragon 8s Gen 3"; gpu = "Adreno 735"; }
+              else if (name.includes('M2101K6P')) { name = "Redmi Note 10 Pro"; chipset = "Snapdragon 732G"; gpu = "Adreno 618"; }
+              else if (name.includes('Redmi') || name.includes('POCO') || name.includes('Mi ')) { chipset = "Qualcomm / MediaTek Engine"; gpu = "Adreno / Mali Graphics"; }
+              else if (name.includes('SAMSUNG') || name.includes('SM-')) { chipset = "Snapdragon / Exynos Platform"; gpu = "Advanced Mobile GPU"; }
+              else if (name.includes('OPPO') || name.includes('Realme') || name.includes('OnePlus')) { chipset = "Snapdragon / Dimensity Optimization"; gpu = "Performance Graphics Core"; }
             }
           } catch (e) {
             console.error("UserAgentData error:", e);
@@ -121,28 +123,21 @@ export default function App() {
         if (name === "Unknown Device") {
           if (/iPhone|iPad|iPod/i.test(ua)) {
             name = "iOS Device";
-            chipset = "Apple A-Series";
-            gpu = "Apple GPU";
+            chipset = "Apple Bionic Engine";
+            gpu = "Apple Metal GPU";
+            os = "iOS 17+ Ecosystem";
           } else if (/Samsung|SM-|GT-/i.test(ua)) {
-            name = "Samsung Galaxy";
-            chipset = "Snapdragon/Exynos";
-            gpu = "Adreno/Mali";
+            name = "Samsung High-End";
+            chipset = "Snapdragon Performance Engine";
+            gpu = "Adreno Graphics Core";
           } else if (/Pixel/i.test(ua)) {
-            name = "Google Pixel";
-            chipset = "Google Tensor";
-            gpu = "Mali-G715";
-          } else if (/Redmi|POCO|Xiaomi|Mi /i.test(ua)) {
-            name = "Xiaomi Device";
-            chipset = "Snapdragon/Dimensity";
-            gpu = "Adreno/Mali";
-          } else if (/OPPO|Realme|OnePlus/i.test(ua)) {
-            name = "BBK Device";
-            chipset = "Snapdragon/Dimensity";
-            gpu = "Adreno/Mali";
+            name = "Google Pixel Engine";
+            chipset = "Google Tensor Titan M2";
+            gpu = "Mali Performance Graphics";
           } else if (/Android/i.test(ua)) {
-            name = "Android Device";
-            chipset = "ARM Processor";
-            gpu = "Mobile GPU";
+            name = "Android Terminal";
+            chipset = "ARM Performance Engine";
+            gpu = "Mobile Graphics Core";
           }
         }
       }
@@ -152,14 +147,16 @@ export default function App() {
         ...prev,
         system: {
           ...prev.system,
-          deviceName: name
+          deviceName: name,
+          osVersion: os
         }
       }));
-      addLog(`Hardware Scan: ${name} detected. Chipset: ${chipset}.`);
+      addLog(`Hardware Scan: ${name} identified. System Architecture: ${chipset}. OS: ${os}`);
     };
 
     detectDevice();
   }, []);
+
 
   useEffect(() => {
     if (connectionMethod === 'shizuku') {
@@ -204,8 +201,47 @@ export default function App() {
     // Direct Injection via Shizuku
     for (const file of files) {
       const success = await ShizukuHelper.writeFile(file.path, file.content);
-      if (success) addLog(`INJECTED: ${file.name} -> ${file.path}`);
-      else addLog(`FAILED: ${file.name} (Falling back to manual)`);
+      if (success) {
+        addLog(`SUCCESS: ${file.name} injected into ${file.path}`);
+      } else {
+        addLog(`MANUAL: ${file.name} generated. Move to ${file.path}`);
+      }
+    }
+
+    // Shell Script Generation for Manual Mode
+    if (connectionMethod === 'shell' || connectionMethod === 'web') {
+      const scriptLines = [
+        "#!/system/bin/sh",
+        "# Ultra GameEngine Optimizer script v4.0",
+        `echo "Targeting Device: ${config.system.deviceName}"`,
+        `echo "Applying ${config.gameMode} optimizations..."`,
+      ];
+
+      if (systemOptimizations.highTouch) scriptLines.push("settings put system high_touch_sensitivity_enabled 1");
+      if (systemOptimizations.gpuForce) scriptLines.push("settings put global force_gpu_rendering 1");
+      scriptLines.push(`settings put global window_animation_scale ${systemOptimizations.animationScale}`);
+      scriptLines.push(`settings put global transition_animation_scale ${systemOptimizations.animationScale}`);
+      scriptLines.push(`settings put global animator_duration_scale ${systemOptimizations.animationScale}`);
+
+      // File Move Commands
+      files.forEach(f => {
+        scriptLines.push(`mkdir -p ${f.path.substring(0, f.path.lastIndexOf('/'))}`);
+        scriptLines.push(`cp /sdcard/Download/${f.name} ${f.path}`);
+      });
+
+      scriptLines.push('echo "SYSTEM OPTIMIZATION COMPLETED SUCCESSFULLY."');
+      
+      const scriptContent = scriptLines.join('\n');
+      const blob = new Blob([scriptContent], { type: 'text/x-shellscript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'apply_optimization.sh';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog(">>> REAL SHELL SCRIPT GENERATED: Run 'sh apply_optimization.sh' in Termux/LADB <<<");
     }
 
     setIsApplying(false);
@@ -734,7 +770,6 @@ export default function App() {
             {[
               { id: 'graphics', icon: Monitor, label: 'Graphics' },
               { id: 'aiming', icon: Target, label: 'Aiming' },
-              { id: 'weapons', icon: Sword, label: 'Weapons' },
               { id: 'tactics', icon: Zap, label: 'Tactics' },
               { id: 'network', icon: Wifi, label: 'Network' },
               { id: 'performance', icon: Activity, label: 'Performance' },
@@ -1155,76 +1190,6 @@ export default function App() {
               </motion.div>
             )}
 
-            {activeTab === 'weapons' && (
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-black text-white tracking-tight">Weapon Profiles</h2>
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Optimized for {config.gameMode}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
-                    <Sword size={20} />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {Object.entries(config.weapons).map(([name, params]: [string, any]) => (
-                    <div key={name} className="glass-dark rounded-3xl p-5 space-y-4 border border-white/5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-black text-white">{name.toUpperCase()}</span>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className={`w-1 h-3 rounded-full ${i <= 4 ? 'bg-blue-500' : 'bg-white/10'}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase">
-                            <span>Recoil</span>
-                            <span>{params.recoil}%</span>
-                          </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500" style={{ width: `${params.recoil}%` }} />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase">
-                            <span>Spread</span>
-                            <span>{params.spread}%</span>
-                          </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-cyan-500" style={{ width: `${params.spread}%` }} />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase">
-                            <span>Damage</span>
-                            <span>{params.damage}%</span>
-                          </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-red-500" style={{ width: `${params.damage}%` }} />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[8px] font-bold text-white/40 uppercase">
-                            <span>Range</span>
-                            <span>{params.range}%</span>
-                          </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500" style={{ width: `${params.range}%` }} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
 
             {activeTab === 'tactics' && (
               <motion.div 
@@ -1872,7 +1837,7 @@ export default function App() {
                     {[
                       { name: 'Android', type: 'dir' },
                       { name: 'data', type: 'dir', parent: 'Android' },
-                      { name: config.gameMode === 'global' ? 'com.tencent.ig' : config.gameMode === 'bgmi' ? 'com.pubg.imobile' : 'com.vng.pubgmobile', type: 'dir', parent: 'data' },
+                      { name: config.gameMode === 'GLOBAL' ? 'com.tencent.ig' : config.gameMode === 'BGMI' ? 'com.pubg.imobile' : 'com.vng.pubgmobile', type: 'dir', parent: 'data' },
                       { name: 'files', type: 'dir', parent: 'game' },
                       { name: 'UE4Game', type: 'dir', parent: 'files' },
                       { name: 'ShadowTrackerExtra', type: 'dir', parent: 'UE4Game' },

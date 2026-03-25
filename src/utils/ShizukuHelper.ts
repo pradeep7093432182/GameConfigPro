@@ -9,7 +9,11 @@ class ShizukuHelper {
   private onLogListeners: ((log: string) => void)[] = [];
 
   private constructor() {
-    this.checkPermission();
+    // Initial check
+  }
+
+  public clearListeners() {
+    this.onLogListeners = [];
   }
 
   public static getInstance(): ShizukuHelper {
@@ -28,7 +32,7 @@ class ShizukuHelper {
   }
 
   public onLog(listener: (log: string) => void) {
-    this.onLogListeners.push(listener);
+    this.onLogListeners = [listener]; // Ensure only ONE listener (the UI)
   }
 
   public async checkPermission(): Promise<boolean> {

@@ -1,0 +1,5 @@
+{
+  "name": "GameConfig Pro",
+  "description": "A high-performance game configuration and environment testing tool for mobile gaming. Supports INI, SAV, JSON, XML, and LUA formats with a glossy, immersive UI.",
+  "requestFramePermissions": []
+}

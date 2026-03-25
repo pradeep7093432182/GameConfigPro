@@ -52,44 +52,98 @@ export default function App() {
   // Auto-detect device on mount
   useEffect(() => {
     const detectDevice = async () => {
-      let name = "M2101K6P";
-      let chipset = "Snapdragon 732G";
-      let gpu = "Adreno 618";
+      let name = "Unknown Device";
+      let chipset = "Unknown";
+      let gpu = "Unknown";
 
-      if ((navigator as any).userAgentData) {
-        try {
-          const highEntropyData = await (navigator as any).userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion', 'architecture']);
-          if (highEntropyData.model) {
-            name = highEntropyData.model;
-            if (name.includes('SM-S92')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-            else if (name.includes('SM-S91')) { chipset = "Snapdragon 8 Gen 2"; gpu = "Adreno 740"; }
-            else if (name.includes('Pixel 8')) { chipset = "Google Tensor G3"; gpu = "Mali-G715"; }
-            else if (name.includes('Pixel 7')) { chipset = "Google Tensor G2"; gpu = "Mali-G710"; }
-            else if (name.includes('ROG')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-            else if (name.includes('RedMagic')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
-            else if (name.includes('POCO F5')) { chipset = "Snapdragon 7+ Gen 2"; gpu = "Adreno 725"; }
-            else if (name.includes('POCO F6')) { chipset = "Snapdragon 8s Gen 3"; gpu = "Adreno 735"; }
-            else if (name.includes('M2101K6P')) { name = "Redmi Note 10 Pro"; chipset = "Snapdragon 732G"; gpu = "Adreno 618"; }
-          }
-        } catch (e) {
-          console.error("UserAgentData error:", e);
-        }
-      }
-
+      // Check if desktop first
       const ua = navigator.userAgent;
-      if (name === "Unknown Device") {
-        if (/iPhone|iPad|iPod/i.test(ua)) {
-          name = "iOS Device";
-          chipset = "Apple A-Series";
-          gpu = "Apple GPU";
-        } else if (/Samsung|SM-|GT-/i.test(ua)) {
-          name = "Samsung Galaxy";
-          chipset = "Snapdragon/Exynos";
-          gpu = "Adreno/Mali";
-        } else if (/Pixel/i.test(ua)) {
-          name = "Google Pixel";
-          chipset = "Google Tensor";
-          gpu = "Mali-G715";
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+
+      if (!isMobile) {
+        // Desktop detection
+        if (/Windows/i.test(ua)) {
+          name = "Windows PC";
+          chipset = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency}-Core CPU` : "Multi-Core CPU";
+          gpu = "DirectX GPU";
+        } else if (/Mac/i.test(ua)) {
+          name = "Apple Mac";
+          chipset = /Apple/i.test(ua) ? "Apple Silicon" : "Intel Core";
+          gpu = /Apple/i.test(ua) ? "Apple Integrated" : "AMD Radeon";
+        } else if (/Linux/i.test(ua)) {
+          name = "Linux Desktop";
+          chipset = `${navigator.hardwareConcurrency || 8}-Core CPU`;
+          gpu = "Mesa/Vulkan";
+        } else {
+          name = "Desktop PC";
+          chipset = `${navigator.hardwareConcurrency || 4}-Core CPU`;
+          gpu = "GPU";
+        }
+
+        // Add RAM estimate
+        if ((navigator as any).deviceMemory) {
+          chipset += ` • ${(navigator as any).deviceMemory}GB RAM`;
+        }
+      } else {
+        // Mobile detection via userAgentData (Chrome-based browsers)
+        if ((navigator as any).userAgentData) {
+          try {
+            const highEntropyData = await (navigator as any).userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion', 'architecture']);
+            if (highEntropyData.model && highEntropyData.model.trim()) {
+              name = highEntropyData.model;
+            }
+            if (highEntropyData.platform) {
+              const platform = highEntropyData.platform;
+              if (platform === 'Android') {
+                // Map known models
+                if (name.includes('SM-S92')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
+                else if (name.includes('SM-S91')) { chipset = "Snapdragon 8 Gen 2"; gpu = "Adreno 740"; }
+                else if (name.includes('SM-A')) { chipset = "Exynos/Dimensity"; gpu = "Mali-G68"; }
+                else if (name.includes('Pixel 8')) { chipset = "Google Tensor G3"; gpu = "Mali-G715"; }
+                else if (name.includes('Pixel 7')) { chipset = "Google Tensor G2"; gpu = "Mali-G710"; }
+                else if (name.includes('ROG')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
+                else if (name.includes('RedMagic')) { chipset = "Snapdragon 8 Gen 3"; gpu = "Adreno 750"; }
+                else if (name.includes('POCO F5')) { chipset = "Snapdragon 7+ Gen 2"; gpu = "Adreno 725"; }
+                else if (name.includes('POCO F6')) { chipset = "Snapdragon 8s Gen 3"; gpu = "Adreno 735"; }
+                else if (name.includes('M2101K6P')) { name = "Redmi Note 10 Pro"; chipset = "Snapdragon 732G"; gpu = "Adreno 618"; }
+                else if (name.includes('Redmi') || name.includes('POCO') || name.includes('Mi ')) { chipset = "Snapdragon/Dimensity"; gpu = "Adreno/Mali"; }
+                else if (name.includes('SAMSUNG') || name.includes('SM-')) { chipset = "Snapdragon/Exynos"; gpu = "Adreno/Mali"; }
+                else if (name.includes('OPPO') || name.includes('Realme') || name.includes('OnePlus')) { chipset = "Snapdragon/Dimensity"; gpu = "Adreno/Mali"; }
+                else { chipset = "ARM Processor"; gpu = "Mobile GPU"; }
+              }
+            }
+          } catch (e) {
+            console.error("UserAgentData error:", e);
+          }
+        }
+        
+        // Fallback UA-based detection for phones
+        if (name === "Unknown Device") {
+          if (/iPhone|iPad|iPod/i.test(ua)) {
+            name = "iOS Device";
+            chipset = "Apple A-Series";
+            gpu = "Apple GPU";
+          } else if (/Samsung|SM-|GT-/i.test(ua)) {
+            name = "Samsung Galaxy";
+            chipset = "Snapdragon/Exynos";
+            gpu = "Adreno/Mali";
+          } else if (/Pixel/i.test(ua)) {
+            name = "Google Pixel";
+            chipset = "Google Tensor";
+            gpu = "Mali-G715";
+          } else if (/Redmi|POCO|Xiaomi|Mi /i.test(ua)) {
+            name = "Xiaomi Device";
+            chipset = "Snapdragon/Dimensity";
+            gpu = "Adreno/Mali";
+          } else if (/OPPO|Realme|OnePlus/i.test(ua)) {
+            name = "BBK Device";
+            chipset = "Snapdragon/Dimensity";
+            gpu = "Adreno/Mali";
+          } else if (/Android/i.test(ua)) {
+            name = "Android Device";
+            chipset = "ARM Processor";
+            gpu = "Mobile GPU";
+          }
         }
       }
 
